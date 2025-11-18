@@ -1,10 +1,14 @@
-# import picture
+import sys
+from PyQt6.QtWidgets import QApplication
+from ui.main_window import MainWindow
 
-# Voronoi drawing
+
+def main():
+    app = QApplication(sys.argv)
+    window = MainWindow()
+    window.show()
+    sys.exit(app.exec())
 
 
-# Territories, all provinces in grid?
-
-# Output both history
-
-# Out put picture + voronoi start points + territory files +provinces.txt + province history files
+if __name__ == "__main__":
+    main()
