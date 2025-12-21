@@ -11,7 +11,8 @@ Province and territory maps form the backbone of these games, defining the geogr
 - Generate and Export territory data
 
 ## Showcase
-<img width="3021" height="1970" alt="image" src="https://github.com/user-attachments/assets/5b9c6ac4-cebf-440c-9020-2d7771d9c493" />
+<img width="2200" height="2318" alt="image" src="https://github.com/user-attachments/assets/1ad0250a-0a50-4bbd-b616-0e215a7ed2bc" />
+<img width="2200" height="2308" alt="image" src="https://github.com/user-attachments/assets/7afe9e4c-648d-4e63-9636-a8df47bfba27" />
 
 ## How to install
 ### Option 1 (Windows only):
