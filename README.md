@@ -9,6 +9,8 @@ This fork adds biome support to the map tool for the game Tyrell.
 ## Features
 - Generate and Export province maps
 - Generate and Export province data
+- Generate Biome Map from input texture
+- Export Province Shapes (Vertices, Edges, Provinces) as JSON
 - Generate and Export territory maps
 - Generate and Export territory data
 
