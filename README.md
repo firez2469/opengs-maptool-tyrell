@@ -1,8 +1,10 @@
 <img width="350" height="350" alt="ogs-mt-logo" src="https://github.com/user-attachments/assets/d03854c8-c2e1-468f-9f8a-269f498d169c" />
 
-# Open Grand Strategy - Map Tool 
+# Open Grand Strategy - Map Tool  (Tyrrel)
 The OpenGS Map Tool is a specialized utility designed to streamline the creation of map data for use in grand strategy games. 
 Province and territory maps form the backbone of these games, defining the geographical regions that players interact with.
+
+This fork adds biome support to the map tool for the game Tyrell.
 
 ## Features
 - Generate and Export province maps
@@ -15,12 +17,6 @@ Province and territory maps form the backbone of these games, defining the geogr
 <img width="2200" height="2308" alt="image" src="https://github.com/user-attachments/assets/7afe9e4c-648d-4e63-9636-a8df47bfba27" />
 
 ## How to install
-### Option 1 (Windows only):
-1. "Releases" section in Github
-2. Download and unpack "ogs_maptool.zip"
-3. Run the Executable
-
-### Option 2:
 1. Clone the repository
 2. Download the necessary libraries by running "pip install -r requirements.txt" in your terminal, 
 inside the project directory
@@ -64,3 +60,5 @@ Contributions can come in many forms and all are appreciated:
 
 ## Delivered and maintained by 
 <img width="350" height="350" alt="gsi-logo" src="https://github.com/user-attachments/assets/e7210566-7997-4d82-845e-48f249d439a0" />
+
+- Marco S. Hampel

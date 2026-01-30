@@ -4,51 +4,61 @@ import numpy as np
 import json
 from PIL import Image
 
-# Ensure project root is in path
 sys.path.append(r"d:\UnityGames\Experimental\Strategy Game API\client\Map Generation\opengs-maptool-windows")
 
-import logic.province_generator as pg
-import logic.biome_manager as bm
-import config
+import logic.shape_extractor as se
 
-# Create a mock layout and manager test
 def run_test():
-    print("Testing Biome Manager Fuzzy Matching...")
+    print("Testing Shape Extractor...")
     
-    # Create a temporary manager with known biomes
-    # We will use the real class but maybe mock the loading or just use the real file.
-    # The real file has "Hot Desert" as [255, 0, 0] (from user edit)
-    # Let's test with a color close to Red, e.g., [250, 10, 10]
+    # Create a small 5x5 grid with 2 provinces
+    # 0 0 1 1 1
+    # 0 0 1 1 1
+    # 0 0 1 1 1
+    # 0 0 1 1 1
+    # 0 0 1 1 1
     
-    manager = bm.BiomeManager("biomes.json")
+    grid = np.zeros((5, 5), dtype=np.int32)
+    grid[:, 2:] = 1
     
-    # Test Exact Match (Hot Desert is 255,0,0)
-    exact = manager.get_biome(255, 0, 0)
-    if exact and exact['id'] == 'hot_desert':
-        print("SUCCESS: Exact match found.")
+    metadata = [{"province_id": "prv-0"}, {"province_id": "prv-1"}]
+    
+    data = se.extract_shapes(grid, metadata)
+    
+    verts = data["vertices"]
+    edges = data["edges"]
+    provinces = data["provinces"]
+    
+    print(f"Vertices: {len(verts)}")
+    print(f"Edges: {len(edges)}")
+    print(f"Provinces: {len(provinces)}")
+    
+    # Vertices should be at Top-Middle (0, 2) and Bottom-Middle (5, 2) of padded grid? 
+    # Or at least capturing the vertical line.
+    
+    # In our logic, nodes are degree != 2.
+    # At (0, 2): T-junction with top edge?
+    # At (5, 2): T-junction with bottom edge?
+    
+    for v in verts:
+        print(f"Vertex: {v}")
+        
+    for e in edges:
+        print(f"Edge: {e['v1']} -> {e['v2']}")
+        
+    if len(provinces) == 2:
+        print("SUCCESS: Identified 2 provinces.")
     else:
-        print(f"FAILURE: Exact match failed. Got {exact}")
+        print(f"FAILURE: Identified {len(provinces)} provinces.")
 
-    # Test Fuzzy Match
-    # Color [200, 50, 50] should be closer to Hot Desert [255, 0, 0] 
-    # than say Polar Ice [171, 183, 177]
-    fuzzy_color = (200, 50, 50) 
-    fuzzy = manager.get_biome(*fuzzy_color)
+    # Check edges
+    p0 = next(p for p in provinces if p['id'] == 'prv-0')
+    p1 = next(p for p in provinces if p['id'] == 'prv-1')
     
-    if fuzzy and fuzzy['id'] == 'hot_desert':
-        print(f"SUCCESS: Fuzzy match found for {fuzzy_color} -> {fuzzy['name']}")
+    if len(p0['edges']) > 0 and len(p1['edges']) > 0:
+         print("SUCCESS: Provinces have edges.")
     else:
-        print(f"FAILURE: Fuzzy match failed for {fuzzy_color}. Got {fuzzy}")
-
-    # Test another fuzzy match
-    # Color [0, 255, 10] should be closer to potentially... 
-    # Humid Subtropical [72, 188, 27] or Cold Rainforest [19, 146, 58]?
-    # Let's try something very close to High Mountains [0,0,0] -> [10, 10, 10]
-    fuzzy_mountain = manager.get_biome(10, 10, 10)
-    if fuzzy_mountain and fuzzy_mountain['id'] == 'high_mountains':
-        print(f"SUCCESS: Fuzzy match found for Mountains.")
-    else:
-        print(f"FAILURE: Fuzzy match failed for Mountains. Got {fuzzy_mountain}")
+         print("FAILURE: Provinces missing edges.")
 
 if __name__ == "__main__":
     run_test()

@@ -152,6 +152,9 @@ def generate_province_map(main_layout):
         main_layout.button_exp_biome_map.setEnabled(True)
 
     main_layout.button_exp_prov_csv.setEnabled(True)
+    if hasattr(main_layout, 'button_exp_prov_shapes'):
+        main_layout.button_exp_prov_shapes.setEnabled(True)
+        
     main_layout.button_gen_territories.setEnabled(True)
 
     return province_image, metadata, combined_indices

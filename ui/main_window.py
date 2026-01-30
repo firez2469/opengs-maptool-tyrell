@@ -3,7 +3,7 @@ from PyQt6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QProgressBar, QTa
 from logic.province_generator import generate_province_map
 from logic.territory_generator import generate_territory_map
 from logic.import_module import import_image
-from logic.export_module import export_image, export_provinces_csv, export_territories_csv, export_territories_json
+from logic.export_module import export_image, export_provinces_csv, export_territories_csv, export_territories_json, export_province_shapes_json
 from ui.buttons import create_slider, create_button
 from ui.image_display import ImageDisplay
 
@@ -116,6 +116,12 @@ class MainWindow(QWidget):
                                                  "Export Province CSV",
                                                  lambda: export_provinces_csv(self))
         self.button_exp_prov_csv.setEnabled(False)
+        
+        self.button_exp_prov_shapes = create_button(button_row,
+                                                 "Export Province Shapes",
+                                                 lambda: export_province_shapes_json(self))
+        self.button_exp_prov_shapes.setEnabled(True) # Enabled? Only after generation.
+        self.button_exp_prov_shapes.setEnabled(False)
 
         # TAB4 TERRITORY IMAGE
         self.territory_tab = QWidget()

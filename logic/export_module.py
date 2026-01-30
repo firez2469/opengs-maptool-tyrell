@@ -2,6 +2,7 @@ import os
 import json
 from PyQt6.QtWidgets import QFileDialog
 import csv
+from logic.shape_extractor import extract_shapes
 
 
 def export_image(parent_layout, image, text):
@@ -94,3 +95,26 @@ def export_territories_json(main_layout):
             json.dump(data, f, indent=4)
 
     print(f"Exported {len(territories)} territories to: {export_dir}")
+
+
+def export_province_shapes_json(main_layout):
+    index_map = getattr(main_layout.province_image_display, "_index_map", None)
+    metadata = getattr(main_layout, "province_data", None)
+
+    if index_map is None or metadata is None:
+        print("No province data or index map available.")
+        return
+
+    path, _ = QFileDialog.getSaveFileName(
+        main_layout, "Export Province Shapes JSON", "", "JSON Files (*.json)")
+    if not path:
+        return
+
+    print("Extracting shapes... this may take a moment.")
+    try:
+        data = extract_shapes(index_map, metadata)
+        with open(path, "w", encoding="utf-8") as f:
+            json.dump(data, f) # Minify? indent=None default
+        print(f"Exported shapes to {path}")
+    except Exception as e:
+        print(f"Error exporting shapes: {e}")
