@@ -1,0 +1,146 @@
+[
+    {
+        "id": "polar_ice_caps",
+        "name": "Polar Ice Caps",
+        "color": [
+            171,
+            183,
+            177
+        ]
+    },
+    {
+        "id": "polar_tundra",
+        "name": "Polar Tundra",
+        "color": [
+            59,
+            71,
+            64
+        ]
+    },
+    {
+        "id": "subarctic_continental",
+        "name": "Subarctic Continental",
+        "color": [
+            29,
+            116,
+            69
+        ]
+    },
+    {
+        "id": "humid_continental",
+        "name": "Humid Continental",
+        "color": [
+            83,
+            74,
+            53
+        ]
+    },
+    {
+        "id": "oceanic_climate",
+        "name": "Oceanic Climate",
+        "color": [
+            26,
+            213,
+            83
+        ]
+    },
+    {
+        "id": "cold_rainforests",
+        "name": "Cold Rainforests",
+        "color": [
+            19,
+            146,
+            58
+        ]
+    },
+    {
+        "id": "mediterranean",
+        "name": "Mediterranean",
+        "color": [
+            223,
+            203,
+            30
+        ]
+    },
+    {
+        "id": "humid_subtropical",
+        "name": "Humid Subtropical",
+        "color": [
+            72,
+            188,
+            27
+        ]
+    },
+    {
+        "id": "cold_steppe",
+        "name": "Cold Steppe",
+        "color": [
+            233,
+            192,
+            93
+        ]
+    },
+    {
+        "id": "cold_desert",
+        "name": "Cold Desert",
+        "color": [
+            205,
+            121,
+            121
+        ]
+    },
+    {
+        "id": "hot_steppe",
+        "name": "Hot Steppe",
+        "color": [
+            255,
+            144,
+            0
+        ]
+    },
+    {
+        "id": "hot_desert",
+        "name": "Hot Desert",
+        "color": [
+            255,
+            0,
+            0
+        ]
+    },
+    {
+        "id": "tropical_savannah",
+        "name": "Tropical Savannah",
+        "color": [
+            40,
+            182,
+            229
+        ]
+    },
+    {
+        "id": "monsoon_rainforest",
+        "name": "Monsoon Rainforest",
+        "color": [
+            31,
+            143,
+            180
+        ]
+    },
+    {
+        "id": "tropical_rainforest",
+        "name": "Tropical Rainforest",
+        "color": [
+            61,
+            40,
+            229
+        ]
+    },
+    {
+        "id": "high_mountains",
+        "name": "High Mountains",
+        "color": [
+            0,
+            0,
+            0
+        ]
+    }
+]

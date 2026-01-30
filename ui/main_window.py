@@ -60,6 +60,20 @@ class MainWindow(QWidget):
                                            "Import Boundary Image",
                                            self.boundary_image_display))
 
+        # TAB3 BIOME IMAGE
+        self.biome_tab = QWidget()
+        self.biome_image_display = ImageDisplay()
+        biome_tab_layout = QVBoxLayout(self.biome_tab)
+        biome_tab_layout.addWidget(self.biome_image_display)
+        self.tabs.addTab(self.biome_tab, "Biome Image")
+
+        # Buttons
+        create_button(biome_tab_layout,
+                      "Import Biome Image",
+                      lambda: import_image(self,
+                                           "Import Biome Image",
+                                           self.biome_image_display))
+
         # TAB3 PROVINCE IMAGE
         self.province_tab = QWidget()
         self.province_image_display = ImageDisplay()
@@ -88,7 +102,7 @@ class MainWindow(QWidget):
 
         self.button_gen_prov = create_button(province_tab_layout,
                                              "Generate Provinces",
-                                             lambda: generate_province_map(self))
+                                             lambda: self.run_generation())
         self.button_gen_prov.setEnabled(False)
 
         self.button_exp_prov_img = create_button(button_row,
@@ -141,6 +155,22 @@ class MainWindow(QWidget):
                                                                       "Export Territory Map"))
         self.button_exp_terr_img.setEnabled(False)
 
+        # TAB5 BIOME MAP
+        self.biome_map_tab = QWidget()
+        self.biome_map_display = ImageDisplay()
+        biome_map_tab_layout = QVBoxLayout(self.biome_map_tab)
+        biome_map_tab_layout.addWidget(self.biome_map_display)
+        self.tabs.addTab(self.biome_map_tab, "Biome Map")
+        button_biome_map_row = QHBoxLayout()
+        biome_map_tab_layout.addLayout(button_biome_map_row)
+
+        self.button_exp_biome_map = create_button(button_biome_map_row,
+                                                  "Export Biome Map",
+                                                  lambda: export_image(self,
+                                                                       self.biome_map_display.get_image(),
+                                                                       "Export Biome Map"))
+        self.button_exp_biome_map.setEnabled(False)
+
         self.button_exp_terr_csv = create_button(button_territory_row,
                                                  "Export Territory CSV",
                                                  lambda: export_territories_csv(self))
@@ -150,3 +180,11 @@ class MainWindow(QWidget):
                                                   "Export Territory JSON",
                                                   lambda: export_territories_json(self))
         self.button_exp_terr_json.setEnabled(False)
+
+    def run_generation(self):
+        # Wrapper to handle the multiple return values
+        _, metadata, index_map = generate_province_map(self)
+        
+        # Set interactive data for tooltips
+        self.province_image_display.set_interactive_data(index_map, metadata)
+        self.biome_map_display.set_interactive_data(index_map, metadata)

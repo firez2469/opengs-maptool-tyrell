@@ -30,10 +30,12 @@ def export_provinces_csv(main_layout):
         with open(path, "w", newline="") as f:
             w = csv.writer(f, delimiter=';')
             w.writerow(["province_id", "R", "G", "B",
-                       "province_type", "x", "y"])
+                       "province_type", "x", "y", "Biome_R", "Biome_G", "Biome_B", "Biome_ID", "Biome_Name"])
             for d in metadata:
                 w.writerow([d["province_id"], d["R"], d["G"], d["B"],
-                            d["province_type"], round(d["x"], 2), round(d["y"], 2)])
+                            d["province_type"], round(d["x"], 2), round(d["y"], 2),
+                            d.get("Biome_R", 0), d.get("Biome_G", 0), d.get("Biome_B", 0),
+                            d.get("Biome_ID", ""), d.get("Biome_Name", "")])
     except Exception as e:
         print("Error saving province data:", e)
 

@@ -4,6 +4,7 @@ from collections import deque
 from PIL import Image
 from scipy.ndimage import distance_transform_edt
 from logic.numb_gen import NumberSeries
+from logic.biome_manager import BiomeManager
 
 used_colors = set()
 
@@ -15,6 +16,7 @@ def generate_province_map(main_layout):
 
     boundary_image = main_layout.boundary_image_display.get_image()
     land_image = main_layout.land_image_display.get_image()
+    biome_image = main_layout.biome_image_display.get_image()
 
     if boundary_image is None and land_image is None:
         raise ValueError(
@@ -75,19 +77,31 @@ def generate_province_map(main_layout):
         config.PROVINCE_ID_END
     )
 
+    # PREPARE BIOME DATA
+    biome_arr = None
+    if biome_image is not None:
+        biome_arr = np.array(biome_image, copy=False)
+        # Ensure it has 3 channels for RGB
+        if biome_arr.ndim == 2:
+             # If grayscale, convert to essentially RGB by stacking
+             biome_arr = np.stack((biome_arr,)*3, axis=-1)
+        elif biome_arr.shape[2] > 3:
+             # Drop alpha if present
+             biome_arr = biome_arr[..., :3]
+
     # GENERATE PROVINCES
     land_points = main_layout.land_slider.value()
     sea_points = main_layout.ocean_slider.value()
 
     land_map, land_meta, next_index = create_province_map(
-        land_fill, land_border, land_points, 0, "land", series
+        land_fill, land_border, land_points, 0, "land", series, biome_arr
     )
 
     main_layout.progress.setValue(50)
 
     if sea_points > 0 and land_image is not None:
         sea_map, sea_meta, _ = create_province_map(
-            sea_fill, sea_border, sea_points, next_index, "ocean", series
+            sea_fill, sea_border, sea_points, next_index, "ocean", series, biome_arr
         )
     else:
         sea_map = np.full((map_h, map_w), -1, np.int32)
@@ -95,19 +109,52 @@ def generate_province_map(main_layout):
 
     metadata = land_meta + sea_meta
 
-    province_image = combine_maps(
-        land_map, sea_map, metadata, land_mask, sea_mask
+    # NOTE: combine_maps was removed/refactored here.
+    # The return statement above was sending province_image which is no longer computed there.
+    # We need to restructure this block slightly.
+    # The previous block was:
+    # province_image = combine_maps(...)
+    # main_layout.province_image_display.set_image(province_image)
+    # ...
+    # return province_image, metadata
+    
+    # Let's target the combine_maps call instead.
+
+    main_layout.button_gen_territories.setEnabled(True)
+
+    # Initialize Biome Manager
+    biome_manager = BiomeManager("biomes.json")
+    
+    # Resolve Biomes
+    if biome_arr is not None:
+         _resolve_biomes(metadata, biome_arr, biome_manager)
+
+    # COMBINE MAPS (Create the grid of IDs)
+    combined_indices = create_visual_index_grid(
+        land_map, sea_map, land_mask, sea_mask
     )
 
+    # RENDER PROVINCE MAP
+    province_image = render_visual_map(combined_indices, metadata, "R", "G", "B")
+
+    # RENDER BIOME MAP
+    biome_map_image = render_visual_map(combined_indices, metadata, "Biome_R", "Biome_G", "Biome_B")
+
     main_layout.province_image_display.set_image(province_image)
+    if hasattr(main_layout, 'biome_map_display'):
+        main_layout.biome_map_display.set_image(biome_map_image)
+        
     main_layout.province_data = metadata
 
     main_layout.progress.setValue(100)
     main_layout.button_exp_prov_img.setEnabled(True)
+    if hasattr(main_layout, 'button_exp_biome_map'):
+        main_layout.button_exp_biome_map.setEnabled(True)
+
     main_layout.button_exp_prov_csv.setEnabled(True)
     main_layout.button_gen_territories.setEnabled(True)
 
-    return province_image, metadata
+    return province_image, metadata, combined_indices
 
 
 # BASIC UTILITIES
@@ -165,7 +212,7 @@ def generate_jitter_seeds(mask: np.ndarray, num_points: int):
     return seeds
 
 
-def create_province_map(fill_mask, border_mask, num_points, start_index, ptype, series):
+def create_province_map(fill_mask, border_mask, num_points, start_index, ptype, series, biome_arr=None):
     if num_points <= 0 or not fill_mask.any():
         empty = np.full(fill_mask.shape, -1, np.int32)
         return empty, [], start_index
@@ -179,7 +226,7 @@ def create_province_map(fill_mask, border_mask, num_points, start_index, ptype, 
 
     pmap, metadata = flood_fill(fill_mask, seeds, start_index, ptype, series)
     assign_borders(pmap, border_mask)
-    finalize_metadata(metadata)
+    finalize_metadata(metadata, biome_arr)
 
     next_index = len(metadata)
     return pmap, list(metadata.values()), next_index
@@ -241,7 +288,7 @@ def assign_borders(pmap, border_mask):
     pmap[bm] = pmap[ny[bm], nx[bm]]
 
 
-def finalize_metadata(metadata):
+def finalize_metadata(metadata, biome_arr):
     for d in metadata.values():
         c = d["count"]
         d["x"] = d["sum_x"] / c
@@ -249,7 +296,32 @@ def finalize_metadata(metadata):
         del d["sum_x"], d["sum_y"], d["count"]
 
 
-def combine_maps(land_map, sea_map, metadata, land_mask, sea_mask):
+def _resolve_biomes(metadata, biome_arr, biome_manager):
+    h, w, _ = biome_arr.shape
+    for d in metadata:
+        # Coordinates are (y, x) in array
+        ix, iy = int(d["x"]), int(d["y"])
+        
+        # Defaults
+        d["Biome_R"] = 0
+        d["Biome_G"] = 0
+        d["Biome_B"] = 0
+        d["Biome_ID"] = "unknown"
+        d["Biome_Name"] = "Unknown"
+
+        if 0 <= iy < h and 0 <= ix < w:
+            r, g, b = biome_arr[iy, ix]
+            d["Biome_R"] = int(r)
+            d["Biome_G"] = int(g)
+            d["Biome_B"] = int(b)
+            
+            biome = biome_manager.get_biome(int(r), int(g), int(b))
+            if biome:
+                d["Biome_ID"] = biome["id"]
+                d["Biome_Name"] = biome["name"]
+
+
+def create_visual_index_grid(land_map, sea_map, land_mask, sea_mask):
     if land_map is not None and land_map.size > 0:
         h, w = land_map.shape
     else:
@@ -270,18 +342,36 @@ def combine_maps(land_map, sea_map, metadata, land_mask, sea_mask):
         _, (ny, nx) = distance_transform_edt(~valid, return_indices=True)
         missing = combined < 0
         combined[missing] = combined[ny[missing], nx[missing]]
+        
+    return combined
 
+def render_visual_map(combined, metadata, r_key, g_key, b_key):
+    h, w = combined.shape
     out = np.zeros((h, w, 3), np.uint8)
 
     if not metadata:
         return Image.fromarray(out)
-
+        
+    # Create LUT
+    # Metadata is list of dicts. But indices in combined map correspond to list order?
+    # Yes, create_province_map uses 'start_index' and increments.
+    # And pmap is filled with 'index'.
+    # In generate_province_map:
+    # land_map starts at 0.
+    # sea_map starts at next_index.
+    # metadata = land_meta + sea_meta
+    # So combined indices should map perfectly to metadata list indices.
+    
     color_lut = np.zeros((len(metadata), 3), np.uint8)
 
     for index, d in enumerate(metadata):
-        color_lut[index] = (d["R"], d["G"], d["B"])
+        color_lut[index] = (d.get(r_key, 0), d.get(g_key, 0), d.get(b_key, 0))
 
     valid = combined >= 0
     out[valid] = color_lut[combined[valid]]
 
     return Image.fromarray(out)
+
+# Deprecating old combine_maps to avoid confusion, or keeping it as wrapper if needed? 
+# It's better to remove it since we replaced its usage.
+
