@@ -60,7 +60,8 @@ Contributions can come in many forms and all are appreciated:
 - Code improvements
 - Added functionality
 
-## Delivered and maintained by 
+## Forked off Repository Maintained by 
 <img width="350" height="350" alt="gsi-logo" src="https://github.com/user-attachments/assets/e7210566-7997-4d82-845e-48f249d439a0" />
 
+## Fork Maintained by
 - Marco S. Hampel
