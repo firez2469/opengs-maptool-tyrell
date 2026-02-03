@@ -312,6 +312,15 @@ def _resolve_biomes(metadata, biome_arr, biome_manager):
         d["Biome_ID"] = "unknown"
         d["Biome_Name"] = "Unknown"
 
+        if d["province_type"] == "ocean":
+            d["Biome_ID"] = "ocean"
+            d["Biome_Name"] = "Ocean"
+            r, g, b = config.OCEAN_COLOR
+            d["Biome_R"] = int(r)
+            d["Biome_G"] = int(g)
+            d["Biome_B"] = int(b)
+            continue
+
         if 0 <= iy < h and 0 <= ix < w:
             r, g, b = biome_arr[iy, ix]
             d["Biome_R"] = int(r)

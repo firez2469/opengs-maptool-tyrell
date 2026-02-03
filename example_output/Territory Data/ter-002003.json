@@ -1,4 +1,7 @@
 {
     "territory_id": "ter-002003",
-    "provinces": []
+    "provinces": [
+        "prv-004691",
+        "prv-005598"
+    ]
 }

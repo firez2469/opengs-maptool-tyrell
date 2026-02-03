@@ -12,8 +12,10 @@ def import_image(layout, text, image_display):
         "Images (*.png *.jpg *.jpeg *.bmp *.gif)"
     )
     if not path:
-        return
+        return None, None
 
     imported_image = Image.open(path)
     image_display.set_image(imported_image)
     layout.button_gen_prov.setEnabled(True)
+    
+    return path, imported_image

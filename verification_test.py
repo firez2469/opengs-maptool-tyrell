@@ -1,72 +1,71 @@
 import sys
 import os
-import numpy as np
 import json
+import numpy as np
 from PIL import Image
 
 sys.path.append(r"d:\UnityGames\Experimental\Strategy Game API\client\Map Generation\opengs-maptool-windows")
 
-import logic.shape_extractor as se
-import reconstruction
+import logic.river_generator as rg
 
 def run_test():
-    print("Running Final Verification...")
+    print("Verifying Strict River Constraints...")
     
-    # 1. Feature Check: Shape Extraction
-    # Run extraction on dummy data
-    print("Testing Shape Extraction...")
-    grid = np.zeros((5, 5), dtype=np.int32)
-    grid[:, 2:] = 1
-    metadata = [{"province_id": "prv-0"}, {"province_id": "prv-1"}]
-    data = se.extract_shapes(grid, metadata)
+    # V0(High Land) -> V1(Mid Land) -> V2(Ocean)
+    # Edge 100: V0-V1. (Land-Land). Should be river.
+    # Edge 101: V1-V2. (Land-Ocean). Coastline. Should NOT be river.
     
-    # Save dummy data for reconstruction test
-    dummy_json_path = "dummy_shapes.json"
-    dummy_csv_path = "dummy_map.csv"
+    vertices = [
+        {"id": 0, "x": 0, "y": 0},
+        {"id": 1, "x": 1, "y": 0},
+        {"id": 2, "x": 2, "y": 0}
+    ]
+    edges = [
+        {"id": 100, "v1": 0, "v2": 1},
+        {"id": 101, "v1": 1, "v2": 2} # This touches Ocean, so filtered out?
+    ]
     
-    with open(dummy_json_path, 'w') as f:
-        json.dump(data, f)
-        
-    with open(dummy_csv_path, 'w') as f:
-        f.write("province_id,R,G,B,province_type,x,y\n")
-        f.write("prv-0,255,0,0,Land,0,0\n")
-        f.write("prv-1,0,255,0,Land,2,0\n")
-        
-    # 2. Feature Check: Reconstruction
-    print("Testing Reconstruction Script...")
-    try:
-        reconstruction.reconstruct_map(dummy_json_path, dummy_csv_path, "dummy_reconstruction.png")
-        if os.path.exists("dummy_reconstruction.png"):
-            print("SUCCESS: Reconstruction image created.")
-        else:
-            print("FAILURE: Reconstruction image not created.")
-    except Exception as e:
-        print(f"FAILURE: Reconstruction script crashed: {e}")
-        
-    # Cleanup
-    try:
-        os.remove(dummy_json_path)
-        os.remove(dummy_csv_path)
-        if os.path.exists("dummy_reconstruction.png"):
-             os.remove("dummy_reconstruction.png")
-    except:
-        pass
-
-    # 3. Documentation Check
-    readme_path = r"d:\UnityGames\Experimental\Strategy Game API\client\Map Generation\opengs-maptool-windows\README.md"
-    doc_path = r"d:\UnityGames\Experimental\Strategy Game API\client\Map Generation\opengs-maptool-windows\example_output\DATA_FORMAT.md"
+    # Prov 0: Land (Owns Edge 100)
+    # Prov 1: Ocean (Owns Edge 101)
     
-    if os.path.exists(readme_path):
-        print("SUCCESS: README exists.")
+    provinces = [
+        {"id": "p0", "edges": [100]},
+        {"id": "p1", "edges": [101]}
+    ]
+    
+    metadata = [
+        {"province_id": "p0", "province_type": "Land"},
+        {"province_id": "p1", "province_type": "Ocean"}
+    ]
+    
+    shape_data = {
+        "vertices": vertices,
+        "edges": edges,
+        "provinces": provinces
+    }
+    
+    # Heightmap: V0=100, V1=50, V2=10
+    hm = Image.new("L", (3, 1))
+    hm.putpixel((0, 0), 100)
+    hm.putpixel((1, 0), 50)
+    hm.putpixel((2, 0), 10)
+    
+    print("Generating rivers...")
+    # Flow V0 -> V1 (1.0). Edge 100 flow=1.
+    # Flow V1 -> V2 (accum 2.0). Edge 101 flow=2.
+    # But Edge 101 touches Ocean, so should be filtered.
+    
+    rv, flow = rg.generate_rivers(shape_data, hm, metadata, river_threshold=0.5)
+    
+    print(f"River Edges: {rv}")
+    print(f"Flow Map: {dict(flow)}")
+    
+    if 100 in rv and 101 not in rv:
+        print("SUCCESS: River formed inland but stopped at coast.")
+    elif 101 in rv:
+        print("FAILURE: Coast edge included as river.")
     else:
-        print("FAILURE: README missing.")
-        
-    if os.path.exists(doc_path):
-        print("SUCCESS: DATA_FORMAT exists.")
-    else:
-        print("FAILURE: DATA_FORMAT missing.")
-
-    print("Final Verification Complete.")
+        print("FAILURE: No river formed.")
 
 if __name__ == "__main__":
     run_test()

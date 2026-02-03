@@ -1,0 +1,24 @@
+{
+    "inputs": {
+        "land_image_path": "D:/UnityGames/Experimental/Strategy Game API/client/Map Generation/opengs-maptool-windows/example_input/land.png",
+        "boundary_image_path": "D:/UnityGames/Experimental/Strategy Game API/client/Map Generation/opengs-maptool-windows/example_input/bound.png",
+        "biome_image_path": "D:/UnityGames/Experimental/Strategy Game API/client/Map Generation/opengs-maptool-windows/example_input/biome.png",
+        "heightmap_image_path": "D:/UnityGames/Experimental/Strategy Game API/client/Map Generation/opengs-maptool-windows/example_input/heightmap.png"
+    },
+    "settings": {
+        "land_province_density": 10000,
+        "ocean_province_density": 300,
+        "river_threshold": 10,
+        "territory_land_density": 3000,
+        "territory_ocean_density": 300
+    },
+    "outputs": {
+        "province_map_image_path": null,
+        "province_csv_path": null,
+        "province_shapes_path": null,
+        "territory_map_image_path": null,
+        "territory_csv_path": null,
+        "territory_json_path": null,
+        "biome_map_image_path": null
+    }
+}

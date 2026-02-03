@@ -55,7 +55,25 @@ def reconstruct_map(shapes_path, csv_path, output_image_path="reconstructed_map.
     # For now, let's just draw the mesh.
     
     for e_id, (p1, p2) in edges.items():
-        draw.line([p1, p2], fill=(200, 200, 200), width=1)
+        # Check source edge data for is_river flag
+        # We need to find the edge dict in shapes['edges']
+        # This is inefficient, better to build lookup or iterate shapes['edges'] directly
+        pass
+        
+    river_count = 0
+    for edge in shapes['edges']:
+        p1 = vertices[edge['v1']]
+        p2 = vertices[edge['v2']]
+        
+        is_river = edge.get('is_river', False)
+        
+        if is_river:
+            draw.line([p1, p2], fill=(0, 0, 255), width=3)
+            river_count += 1
+        else:
+            draw.line([p1, p2], fill=(200, 200, 200), width=1)
+            
+    print(f"Drew {len(edges)} edges, {river_count} rivers.")
 
     # Draw Centroids or IDs based on CSV
     # (Optional)

@@ -25,10 +25,17 @@ class ImageDisplay(QLabel):
 
     def set_image(self, image):
         self._image = image
+        # Ensure image is RGBA for QImage
+        if image.mode != "RGBA":
+            # Handle P, L, RGB, etc.
+            display_img = image.convert("RGBA")
+        else:
+            display_img = image
+            
         qimage = QImage(
-            image.tobytes("raw", "RGBA"),
-            image.width,
-            image.height,
+            display_img.tobytes("raw", "RGBA"),
+            display_img.width,
+            display_img.height,
             QImage.Format.Format_RGBA8888
         )
         pixmap = QPixmap.fromImage(qimage)
