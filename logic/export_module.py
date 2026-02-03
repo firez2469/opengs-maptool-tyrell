@@ -31,6 +31,14 @@ def export_provinces_csv(main_layout):
     if not path:
         return None
 
+    return export_provinces_csv_to_path(main_layout, path)
+
+
+def export_provinces_csv_to_path(main_layout, path):
+    metadata = getattr(main_layout, "province_data", None)
+    if not metadata:
+        return None
+
     try:
         with open(path, "w", newline="") as f:
             w = csv.writer(f, delimiter=';')
@@ -56,6 +64,14 @@ def export_territories_csv(main_layout):
     path, _ = QFileDialog.getSaveFileName(
         main_layout, "Export territory CSV", "", "CSV Files (*.csv)")
     if not path:
+        return None
+
+    return export_territories_csv_to_path(main_layout, path)
+
+
+def export_territories_csv_to_path(main_layout, path):
+    metadata = getattr(main_layout, "territory_data", None)
+    if not metadata:
         return None
 
     try:
@@ -86,6 +102,10 @@ def export_territories_json(main_layout):
         print("Territory export cancelled.")
         return None
 
+    return export_territories_to_dir(main_layout, export_dir)
+
+
+def export_territories_to_dir(main_layout, export_dir):
     territories = main_layout.territory_data
 
     for terr in territories:
@@ -118,6 +138,13 @@ def export_province_shapes_json(main_layout):
         main_layout, "Export Province Shapes JSON", "", "JSON Files (*.json)")
     if not path:
         return None
+
+    return export_province_shapes_to_path(main_layout, path)
+
+
+def export_province_shapes_to_path(main_layout, path):
+    index_map = getattr(main_layout.province_image_display, "_index_map", None)
+    metadata = getattr(main_layout, "province_data", None)
 
     print("Extracting shapes... this may take a moment.")
     try:
@@ -174,3 +201,80 @@ def export_province_shapes_json(main_layout):
     except Exception as e:
         print(f"Error exporting shapes: {e}")
         return None
+
+
+def export_all_project(main_layout):
+    import config
+    
+    # 1. Ask for root directory
+    root_dir = QFileDialog.getExistingDirectory(
+        main_layout,
+        "Select Export Directory for All Data",
+        "",
+        QFileDialog.Option.ShowDirsOnly | QFileDialog.Option.DontResolveSymlinks
+    )
+    if not root_dir:
+        return
+
+    # 2. Structure
+    map_data_dir = os.path.join(root_dir, "map_data")
+    territories_dir = os.path.join(map_data_dir, "territories")
+    
+    os.makedirs(map_data_dir, exist_ok=True)
+    os.makedirs(territories_dir, exist_ok=True)
+
+    provinces_path = os.path.join(map_data_dir, "provinces.json")
+
+    # 3. Export Data
+    # Images
+    images_dir = os.path.join(map_data_dir, "images")
+    os.makedirs(images_dir, exist_ok=True)
+    
+    if main_layout.province_image_display.get_image():
+        main_layout.province_image_display.get_image().save(os.path.join(images_dir, "province_map.png"))
+        
+    if main_layout.territory_image_display.get_image():
+        main_layout.territory_image_display.get_image().save(os.path.join(images_dir, "territory_map.png"))
+        
+    if main_layout.biome_map_display.get_image():
+        main_layout.biome_map_display.get_image().save(os.path.join(images_dir, "biome_map.png"))
+
+    # CSVs
+    csv_dir = os.path.join(map_data_dir, "data")
+    os.makedirs(csv_dir, exist_ok=True)
+    
+    export_provinces_csv_to_path(main_layout, os.path.join(csv_dir, "provinces.csv"))
+    export_territories_csv_to_path(main_layout, os.path.join(csv_dir, "territories.csv"))
+
+    # Export Province Shapes
+    export_province_shapes_to_path(main_layout, provinces_path)
+    
+    # Export Territories
+    export_territories_to_dir(main_layout, territories_dir)
+
+    # 4. Master JSON
+    master_data = {
+        "version": config.VERSION,
+        "provinces_path": "map_data/provinces.json",
+        "territories_path": "map_data/territories/",
+        "files": {
+             "provinces": "map_data/provinces.json",
+             "territories_dir": "map_data/territories",
+             "images": {
+                 "province_map": "map_data/images/province_map.png",
+                 "territory_map": "map_data/images/territory_map.png",
+                 "biome_map": "map_data/images/biome_map.png"
+             },
+             "data": {
+                 "provinces_csv": "map_data/data/provinces.csv",
+                 "territories_csv": "map_data/data/territories.csv"
+             }
+        }
+    }
+    
+    master_path = os.path.join(root_dir, "master.json")
+    with open(master_path, "w", encoding="utf-8") as f:
+        json.dump(master_data, f, indent=4)
+        
+    print(f"Export All completed to {root_dir}")
+

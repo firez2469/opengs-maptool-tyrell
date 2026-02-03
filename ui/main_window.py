@@ -6,7 +6,7 @@ from PyQt6.QtGui import QAction
 from logic.province_generator import generate_province_map
 from logic.territory_generator import generate_territory_map
 from logic.import_module import import_image
-from logic.export_module import export_image, export_provinces_csv, export_territories_csv, export_territories_json, export_province_shapes_json
+from logic.export_module import export_image, export_provinces_csv, export_territories_csv, export_territories_json, export_province_shapes_json, export_all_project
 from ui.buttons import create_slider, create_button
 from ui.image_display import ImageDisplay
 from PIL import Image
@@ -60,6 +60,12 @@ class MainWindow(QWidget):
         load_action = QAction("Load Project", self)
         load_action.triggered.connect(self.load_project)
         file_menu.addAction(load_action)
+
+        file_menu.addSeparator()
+
+        export_all_action = QAction("Export All", self)
+        export_all_action.triggered.connect(lambda: export_all_project(self))
+        file_menu.addAction(export_all_action)
 
         main_layout.addWidget(self.menu_bar)
 
